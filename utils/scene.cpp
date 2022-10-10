@@ -71,8 +71,9 @@ void Scene::drawNodes() {
 }
 
 //@todo better methods
-auto Scene::checkNodeLink(std::shared_ptr<Node> node, std::unique_ptr<NodeSocket> socket) 
-    -> std::unique_ptr<NodeSocket>
+// auto Scene::checkNodeLink(std::shared_ptr<Node> node, std::unique_ptr<NodeSocket> socket) 
+//     -> std::unique_ptr<NodeSocket>
+void Scene::checkNodeLink(std::shared_ptr<Node> node, NodeSocket* socket) 
 {
     // this->context->last_click_node = node->id;
     if(socket->socket_type == NodeSocketType::Input) {
@@ -87,7 +88,6 @@ auto Scene::checkNodeLink(std::shared_ptr<Node> node, std::unique_ptr<NodeSocket
         this->context->output_node_id = node->id;
         this->context->output_socket_id = socket->id;
     }
-    return std::move(socket);
 }
 
 void Scene::drawNodeInputSockets(std::shared_ptr<Node> node){
@@ -104,7 +104,7 @@ void Scene::drawNodeInputSockets(std::shared_ptr<Node> node){
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
             fmt::print("{}\n", socket->id);
 
-            socket = this->checkNodeLink(node,std::move(socket));
+            this->checkNodeLink(node,socket.get());      
         }
         // for test
         if (ImGui::IsItemHovered())
@@ -130,7 +130,7 @@ void Scene::drawNodeOutputSockets(std::shared_ptr<Node> node){
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
             fmt::print("{}\n", socket->id);
 
-            socket = this->checkNodeLink(node,std::move(socket));            
+            this->checkNodeLink(node,socket.get());            
         }
         // for test
         if (ImGui::IsItemHovered())

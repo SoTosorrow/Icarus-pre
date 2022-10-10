@@ -28,7 +28,8 @@ struct Scene{
     void drawNodeInputSockets(std::shared_ptr<Node> node);
     void drawNodeOutputSockets(std::shared_ptr<Node> node);
     void drawNodeLinks();
-    auto checkNodeLink(std::shared_ptr<Node> node, std::unique_ptr<NodeSocket> socket)->std::unique_ptr<NodeSocket> ;
+    // auto checkNodeLink(std::shared_ptr<Node> node, std::unique_ptr<NodeSocket> socket)->std::unique_ptr<NodeSocket> ;
+    void checkNodeLink(std::shared_ptr<Node> node, NodeSocket* socket);
 
 
     void executeEvent();
@@ -48,6 +49,9 @@ struct Scene{
 删除节点时删除相关的连线
 拖拽视图的错位
 缩放视图
+节点遮挡，选择不到body内部
+连线的逻辑，图算法
+如何拓展节点
 
 
 */
