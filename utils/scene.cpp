@@ -5,18 +5,20 @@ Scene::Scene() {
     this->addNode();
 }
 
-void Scene::addNodeLink() {
-
-    this->node_links.insert({
-        std::to_string(this->context->id),
-        std::make_unique<NodeLink>(
+auto Scene::addNodeLink() -> std::shared_ptr<NodeLink>{
+    auto temp_link = std::make_shared<NodeLink>(
             this->context,
             this->context->input_node_id,
             this->context->input_socket_id,
             this->context->output_node_id,
             this->context->output_socket_id
-        )
+        );
+    this->node_links.insert({
+        std::to_string(this->context->id),
+        temp_link
     });
+    this->link_map.insert(temp_link);
+    return temp_link;
 }
 
 void Scene::addNode(const std::string &name, ImVec2 pos) {
@@ -92,7 +94,7 @@ void Scene::checkNodeLink(std::shared_ptr<Node> node, NodeSocket* socket)
 
 void Scene::drawNodeInputSockets(std::shared_ptr<Node> node){
     auto draw_list = ImGui::GetWindowDrawList();
-    for(auto &[socket_id, socket] : node->input_sockets) {
+    for(const auto &[socket_id, socket] : node->input_sockets) {
         ImGui::PushID(socket->id);
         socket->draw();
 
@@ -118,7 +120,7 @@ void Scene::drawNodeInputSockets(std::shared_ptr<Node> node){
 
 void Scene::drawNodeOutputSockets(std::shared_ptr<Node> node){
     auto draw_list = ImGui::GetWindowDrawList();
-    for(auto &[socket_id, socket] : node->output_sockets) {
+    for(const auto &[socket_id, socket] : node->output_sockets) {
         ImGui::PushID(socket->id);
         socket->draw();
 
@@ -176,10 +178,19 @@ void Scene::executeEvent() {
         fmt::print("test\n");
         this->test();
     }
+    if(ImGui::IsKeyPressed(ImGuiKey_E)) {
+        fmt::print("test\n");
+        this->link_map.print();
+    }
+    if(ImGui::IsKeyPressed(ImGuiKey_R)) {
+        fmt::print("test\n");
+        this->link_map.search(0,4);
+    }
     if(ImGui::IsKeyPressed(ImGuiKey_W)) {
         fmt::print("clear\n");
         this->context->clear();
     }
+
     if(ImGui::IsKeyPressed(ImGuiKey_D)) {
         fmt::print("delete node: {}\n", this->context->last_click_node);
         this->nodes.erase(std::to_string(this->context->last_click_node));

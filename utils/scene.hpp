@@ -16,11 +16,12 @@ struct Scene{
     std::shared_ptr<Context> context;
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes;
     std::unordered_map<std::string, std::shared_ptr<NodeLink>> node_links;
+    LinkMap link_map;
     bool open_menu = false;
 
     Scene();
 
-    void addNodeLink();
+    auto addNodeLink() -> std::shared_ptr<NodeLink>;
     void addNode(const std::string &name="hello", ImVec2 pos=ImVec2(300,300));
 
     void drawGrid();
@@ -52,6 +53,8 @@ struct Scene{
 节点遮挡，选择不到body内部
 连线的逻辑，图算法
 如何拓展节点
+@! 检查link share的数量，确保没有内存泄露和指针死持有
+addLink 不允许重复连接
 
 
 */
