@@ -1,5 +1,3 @@
-#pragma once
-
 #include"node_socket.hpp"
 #include"fmt/core.h"
 

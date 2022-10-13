@@ -38,7 +38,7 @@ void Node:: draw() {
         node_body_color
     );
 
-    // debug draw
+    // @debug draw
     if(is_debug_mode){
         this->drawDebug(draw_list, node_start_pos);
     }
@@ -46,7 +46,7 @@ void Node:: draw() {
 }
 
 void Node::drawDebug(ImDrawList* draw_list, ImVec2 node_start_pos){
-    // debug info
+    // @debug info
     auto pos = std::to_string(this->pos.x)+":"+std::to_string(this->pos.y);
     ImGui::SetCursorScreenPos(node_start_pos + ImVec2(0,-25));
     ImGui::Text("%s",this->name.c_str());

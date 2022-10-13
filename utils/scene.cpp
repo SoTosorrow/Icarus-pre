@@ -13,6 +13,7 @@ auto Scene::addNodeLink() -> std::shared_ptr<NodeLink>{
             this->context->output_node_id,
             this->context->output_socket_id
         );
+    // @todo delete
     this->node_links.insert({
         std::to_string(this->context->id),
         temp_link
@@ -59,7 +60,7 @@ void Scene::drawNodes() {
         // 点击事件
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0))
         {
-            fmt::print("{}\n", node->id);
+            fmt::print("click Node:{}\n", node->id);
             this->context->last_click_node = node->id;
         }
         // 拖拽事件
@@ -104,8 +105,6 @@ void Scene::drawNodeInputSockets(std::shared_ptr<Node> node){
         ImGui::InvisibleButton("socket", socket_width*2);
 
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
-            fmt::print("{}\n", socket->id);
-
             this->checkNodeLink(node,socket.get());      
         }
         // for test
@@ -130,8 +129,6 @@ void Scene::drawNodeOutputSockets(std::shared_ptr<Node> node){
         ImGui::InvisibleButton("socket", socket_width*2);
 
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
-            fmt::print("{}\n", socket->id);
-
             this->checkNodeLink(node,socket.get());            
         }
         // for test
@@ -170,6 +167,8 @@ void Scene::drawNodeLinks() {
 void Scene::executeEvent() {
     ImGuiIO& io = ImGui::GetIO();
     // Scene Events
+
+    // right click to add Node
     if (ImGui::IsMouseClicked(1)){
         this->addNode("hello", ImGui::GetMousePos());
         this->open_menu = !this->open_menu;
@@ -192,11 +191,45 @@ void Scene::executeEvent() {
     }
 
     if(ImGui::IsKeyPressed(ImGuiKey_D)) {
-        fmt::print("delete node: {}\n", this->context->last_click_node);
-        this->nodes.erase(std::to_string(this->context->last_click_node));
+        if(context->last_click_node == -1){
+            return;
+        }
+        fmt::print("DEBUG:delete node: {}\n", this->context->last_click_node);
+        
+        //@todo make node disable instead of erase
+        int delete_id = this->context->last_click_node;
         this->context->last_click_node = -1;
+        auto delete_node = nodes[std::to_string(delete_id)];
 
-        //@todo 删除相关的线
+         //@todo 删除相关的线
+
+        // delete output node link
+        for(auto& [socket_id_str,socket] : delete_node->output_sockets){
+            std::string output_id = std::to_string(delete_id) + '/' + socket_id_str;
+            if(link_map.node_links.contains(output_id)){
+                auto links = link_map.node_links[output_id];
+
+                auto delete_links_vec = std::vector<std::string>();
+                auto delete_links_vec2 = std::vector<std::string>();
+                for(auto j=links->begin();j!=links->end();j++){
+                    delete_links_vec.push_back(j->first);
+                    delete_links_vec2.push_back(std::to_string(j->second->id));
+                }
+                for(const auto& delete_link_id : delete_links_vec){
+                    //@todo use disable instead of erase
+                    links->erase(delete_link_id);
+                }
+                for(const auto& delete_link_id : delete_links_vec2){
+                    //@todo use disable instead of erase
+                    node_links.erase(delete_link_id);
+                }
+            }
+        }
+        //@todo delete input node link
+
+
+
+        this->nodes.erase(std::to_string(delete_id));
     }
     if(this->open_menu){
         ImGui::OpenPopup("context_menu");

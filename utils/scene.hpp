@@ -15,6 +15,7 @@ struct Scene{
 
     std::shared_ptr<Context> context;
     std::unordered_map<std::string, std::shared_ptr<Node>> nodes;
+    //@todo delete
     std::unordered_map<std::string, std::shared_ptr<NodeLink>> node_links;
     LinkMap link_map;
     bool open_menu = false;

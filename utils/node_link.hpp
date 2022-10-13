@@ -11,6 +11,8 @@ struct NodeLink
     int output_node_id;
     int input_socket_id;
     int output_socket_id;
+    //@todo bool enable = true;
+    //@todo bool is_check = true; make link color diff
 
     // NodeLink(const Context &_context)
     NodeLink(std::shared_ptr<Context> _context, 
@@ -23,7 +25,7 @@ struct NodeLink
         input_socket_id(_input_socket_id),
         output_socket_id(_output_socket_id)
     {
-        this->id = _context->id++;
+        this->id = ++_context->id;
     }
     void draw(){}
 };
@@ -81,16 +83,17 @@ struct LinkMap
     }
 
     void print(){
-        // fmt::print("{}\n",node_links.size());
+        fmt::print("{}\n",node_links.size());
         for (const auto& [link_id,link_tree] : this->node_links){
             fmt::print("debug{}\n",link_tree->size());
             for(auto i=this->node_links[link_id]->begin();i!=node_links[link_id]->end();i++){
-                fmt::print("    {}:{}->{}:{}\n",
-                    i->second->output_node_id,
-                    i->second->output_socket_id,
-                    i->second->input_node_id,
-                    i->second->input_socket_id
-                );
+                // fmt::print("    {}:{}->{}:{}\n",
+                //     i->second->output_node_id,
+                //     i->second->output_socket_id,
+                //     i->second->input_node_id,
+                //     i->second->input_socket_id
+                // );
+                fmt::print("    {}:{}", link_id, i->first);
             }
         }
     }

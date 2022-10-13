@@ -15,6 +15,7 @@ struct Context{
     ImVec2 viewport_translate =ImVec2(0.0f, 0.0f);
     ImVec2 viewport_scale;
 
+    //@todo int to string
     int input_node_id = -1;
     int input_socket_id = -1;
     int output_node_id = -1;
@@ -45,7 +46,7 @@ enum class NodeSocketType{
 };
 
 // enum class DataType{
-
+// std::variant<>
 // };
 
 enum class ElementType{
