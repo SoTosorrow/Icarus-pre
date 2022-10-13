@@ -30,45 +30,50 @@ struct NodeLink
 
 struct LinkMap
 {
-    // using PairId = std::pair<int,int>;
-    using NodeLinkTree = std::map<int, std::shared_ptr<NodeLink>>;
-    //@check
-    std::unordered_map<std::string, std::shared_ptr<NodeLinkTree>> node_links;
+    using tId = std::string;
+    // input socket id -> NodeLink
+    using NodeLinkMap = std::unordered_map<tId, std::shared_ptr<NodeLink>>;
+    // output socket id -> NodeLinks
+    std::unordered_map<tId, std::shared_ptr<NodeLinkMap>> node_links;
 
     LinkMap(){}
 
+    std::string makeId(int id1,int id2){
+        return std::to_string(id1) + '/' + std::to_string(id2);
+    }
+
+
     void insert(std::shared_ptr<NodeLink> node_link){
-        std::string link_id = std::to_string(node_link->output_node_id) 
-                                + '/' 
-                                + std::to_string(node_link->output_socket_id);
-        fmt::print("{}\n",link_id);
-        if(this->node_links.contains(link_id)){
-            auto node_link_tree = this->node_links[link_id];
-            node_link_tree->insert({node_link->id, node_link});
+        std::string output_id = makeId(node_link->output_node_id, node_link->output_socket_id);
+        std::string input_id = makeId(node_link->input_node_id, node_link->input_socket_id);
+
+        fmt::print("{}\n",output_id);
+        if(this->node_links.contains(output_id)){
+            auto node_link_tree = this->node_links[output_id];
+            node_link_tree->insert({input_id, node_link});
         }else{
-            auto node_link_tree = std::make_shared<NodeLinkTree>();
-            node_link_tree->insert({node_link->id, node_link});
+            auto node_link_tree = std::make_shared<NodeLinkMap>();
+            node_link_tree->insert({input_id, node_link});
             this->node_links.insert(
                 {
-                    link_id,
+                    output_id,
                     node_link_tree
                 });
         }
     }
 
     void search(int output_node_id, int output_socket_id){
-        std::string link_id = std::to_string(output_node_id) 
-                                + '/' 
-                                + std::to_string(output_socket_id);
+        std::string link_id = makeId(output_node_id, output_socket_id);
+
         if(this->node_links.contains(link_id)){
             fmt::print("search\n");
             for(auto i=this->node_links[link_id]->begin();i!=node_links[link_id]->end();i++){
-                fmt::print("{},{},{},{}\n",i->second->input_node_id,
-                        i->second->input_socket_id,
-                        i->second->output_node_id,
-                        i->second->output_socket_id
-                    );
-
+                fmt::print("{}:{}->{}:{}\n",
+                    i->second->output_node_id,
+                    i->second->output_socket_id,
+                    i->second->input_node_id,
+                    i->second->input_socket_id
+                );
             }
             // for(auto& [id, link]: this->node_links[link_id]->begin){
             // }
@@ -79,6 +84,14 @@ struct LinkMap
         // fmt::print("{}\n",node_links.size());
         for (const auto& [link_id,link_tree] : this->node_links){
             fmt::print("debug{}\n",link_tree->size());
+            for(auto i=this->node_links[link_id]->begin();i!=node_links[link_id]->end();i++){
+                fmt::print("    {}:{}->{}:{}\n",
+                    i->second->output_node_id,
+                    i->second->output_socket_id,
+                    i->second->input_node_id,
+                    i->second->input_socket_id
+                );
+            }
         }
     }
 };
