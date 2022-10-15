@@ -6,13 +6,21 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(extern/imgui)
 
+# set(MAIN 
+#     main.cpp
+#     utils/scene.cpp
+#     utils/node.cpp
+#     utils/node_socket.cpp)
 set(MAIN 
     main.cpp
-    utils/scene.cpp
-    utils/node.cpp
-    utils/node_socket.cpp)
-    
+    src/scene.cpp
+    src/node.cpp
+    src/node_socket.cpp)
+      
 set(current ${CMAKE_CURRENT_SOURCE_DIR})
+
+# ImGui--math op for imVec
+# add_definitions(-DIMGUI_DEFINE_MATH_OPERATORS=1)
 
 if (POLICY CMP0072)
   set(OpenGL_GL_PREFERENCE LEGACY)
