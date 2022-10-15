@@ -1,7 +1,6 @@
 #include"node.hpp"
 #include"node_socket.hpp"
 #include "scene.hpp"
-#include<iostream>
 
 Node::Node(
     std::weak_ptr<Scene> _scene,
@@ -11,7 +10,7 @@ Node::Node(
     :scene(std::move(_scene)),context(_context),name(_name),pos(_pos)
 {
     this->id = _context->genId();
-    std::cout<<"?"<<_scene.lock()->scene_grid_sz<<std::endl;
+    fmt::print("node get{}\n",this->id);
 }
 
 void Node::setSocketsNum(int _input_sockets_num, int _output_sockets_num){
@@ -24,13 +23,8 @@ void Node::setNodeSize(ImVec2 _size){
 
 void Node::init() {
     for(auto i=0;i<this->input_sockets_num;i++){
-        std::cout<<&this->scene<<std::endl;
-        // fmt::print("{}\n",this->scene.lock()->scene_grid_sz);
         auto socket = std::make_shared<NodeSocket>(this->scene, this->context, this->id, NodeSocketType::Input, i);
-        // fmt::print("{}\n",this->scene);
-        auto p =this->scene.lock();
-        p->map_sockets.insert({socket->id, socket});
-    fmt::print("2\n");
+        this->scene.lock()->map_sockets.insert({socket->id, socket});
         this->input_socket_ids.insert({
             i,
             socket->id
@@ -47,6 +41,7 @@ void Node::init() {
 }
 
 void Node:: draw() {
+    
     auto draw_list = ImGui::GetWindowDrawList();
 
     auto node_start_pos = this->pos +              this->context->vp_trans;
@@ -56,14 +51,13 @@ void Node:: draw() {
     if(is_debug_mode){
         this->drawDebug(node_start_pos);
     }
-
     // draw Node body
     draw_list->AddRectFilled(
         node_start_pos,
         node_end_pos,
         node_body_color
     );
-    draw_list->ChannelsMerge();
+    // draw_list->ChannelsMerge();
 }
 
 void Node::drawDebug(ImVec2 node_start_pos){

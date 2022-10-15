@@ -1,7 +1,6 @@
 #include"scene.hpp"
 #include"node_socket.hpp"
 #include"node_link.hpp"
-#include"fmt/core.h"
 
 //@todo socket index should be increment
 //@todo default constructor
@@ -18,13 +17,14 @@ NodeSocket::NodeSocket(
     socket_index(_socket_index)
 {
     this->id = _context->genId();
+    fmt::print("socket get{}\n",this->id);
 }
 
 void NodeSocket::draw() {
     auto draw_list = ImGui::GetWindowDrawList();
     // 加上viewport的全局位置
-                    fmt::print("1\n");
     auto belong_node = this->scene.lock()->map_nodes[this->node_id];
+
     this->pos = 
         belong_node->pos 
         + ImVec2(

@@ -1,16 +1,11 @@
 #include "scene.hpp"
 #include "utils.hpp"
 
-#include<iostream>
-
 Scene::Scene() {
     this->context = std::make_shared<Context>();
 }
 
 void Scene::init(){
-     std::cout<<"test"<<std::endl;
-     std::cout<<this->scene_grid_sz<<std::endl;
-    std::cout<<this->weak_from_this().lock()->scene_grid_sz<<std::endl;
     this->addNode();
 }
 
@@ -35,10 +30,17 @@ void Scene::addNodeLink(){
             this->context->input_socket_id,
             this->context->ouput_socket_id
         );
+
+    //@todo NodeLink add node_id
+    this->map_sockets[this->context->input_socket_id]->addNodeLink(temp_link->id);
+    this->map_sockets[this->context->ouput_socket_id]->addNodeLink(temp_link->id);
+    
     this->map_nodelinks.insert({
-        this->context->genId(),
+        temp_link->id,
         std::move(temp_link)
     });
+
+    
 }
 
 void Scene::drawNodes() {
@@ -46,12 +48,15 @@ void Scene::drawNodes() {
     ImGuiIO& io = ImGui::GetIO();
 
     for(auto &[node_id, node] : map_nodes) {
+
+        if(node->enable == false)
+            continue;
+
         ImGui::PushID(ImGui::GetID(node_id.c_str()));
         // draw nodes
         node->draw();
         this->drawNodeInputSockets(node);
         this->drawNodeOuputSockets(node);
-
 
         // 变化坐标系
         ImGui::SetCursorScreenPos(node->pos + this->context->vp_trans);
@@ -60,7 +65,7 @@ void Scene::drawNodes() {
         // 点击事件
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0))
         {
-            fmt::print("click Node:{}\n", node->id);
+            fmt::print("DEBUG: click Node:{}\n", node->id);
             this->context->last_selected_node_id = node->id;
         }
         // 拖拽事件
@@ -74,8 +79,8 @@ void Scene::drawNodes() {
 }
 
 void Scene::addNode(const std::string& name, ImVec2 pos){
-    auto temp_id = this->context->genId();
     auto node = std::make_shared<Node>(this->weak_from_this(),this->context, name, pos);
+    auto temp_id = node->id; 
     node->init();
     this->map_nodes.insert({std::move(temp_id), std::move(node)});
 }
@@ -84,7 +89,6 @@ void Scene::drawNodeInputSockets(std::shared_ptr<Node> node){
     auto draw_list = ImGui::GetWindowDrawList();
     for(const auto& [socket_index, socket_id] : node->input_socket_ids) {
         ImGui::PushID(ImGui::GetID(socket_id.c_str()));
-
         auto socket = this->map_sockets[socket_id];
 
         socket->draw();
@@ -95,7 +99,8 @@ void Scene::drawNodeInputSockets(std::shared_ptr<Node> node){
         ImGui::InvisibleButton("socket", socket_width*2);
 
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
-            this->checkNodeLink(socket);      
+            this->checkNodeLink(socket);     
+            fmt::print("DEBUG: click Socket:{}\n", socket->id); 
         }
         // for test
         if (ImGui::IsItemHovered())
@@ -122,7 +127,8 @@ void Scene::drawNodeOuputSockets(std::shared_ptr<Node> node){
         ImGui::InvisibleButton("socket", socket_width*2);
 
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
-            this->checkNodeLink(socket);      
+            this->checkNodeLink(socket);   
+            fmt::print("DEBUG: click Socket:{}\n", socket->id);  
         }
         // for test
         if (ImGui::IsItemHovered())
@@ -130,6 +136,31 @@ void Scene::drawNodeOuputSockets(std::shared_ptr<Node> node){
             draw_list->AddRectFilled(socket->pos - ImVec2(5.0f,5.0f), socket->pos + ImVec2(10.0f,10.0f), IM_COL32(0,255,0,255));
         }
 
+        ImGui::PopID();
+    }
+}
+
+void Scene::drawNodeLinks() {
+    auto draw_list = ImGui::GetWindowDrawList();
+    for(auto &[node_link_id,node_link]:map_nodelinks){
+
+        if(node_link->enable == false)
+            continue;
+
+        ImGui::PushID(ImGui::GetID(node_link_id.c_str()));
+
+        auto last_pos = 
+            this->map_sockets[node_link->input_socket_id]->pos;
+        auto current_pos = 
+            this->map_sockets[node_link->ouput_socket_id]->pos;
+
+        draw_list->AddBezierCurve(
+            last_pos, 
+            last_pos + ImVec2(-50, 0), 
+            current_pos + ImVec2(+50, 0), 
+            current_pos, 
+            scene_link_color, 
+            3.0f);
         ImGui::PopID();
     }
 }
@@ -146,14 +177,84 @@ void Scene::drawGrid() {
         draw_list->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, scene_grid_color);
 }
 
+void Scene::executeEvent() {
+    ImGuiIO& io = ImGui::GetIO();
+    // Scene Events
+
+    // right click to add Node
+    if (ImGui::IsMouseClicked(1)){
+        this->addNode("hello", ImGui::GetMousePos());
+        // this->open_menu = !this->open_menu;
+    }
+    if(ImGui::IsKeyPressed(ImGuiKey_Q)) {
+        fmt::print("test\n");
+        this->debugInfo();
+    }
+    if(ImGui::IsKeyPressed(ImGuiKey_W)) {
+        fmt::print("DEBUG: context clear\n");
+        this->context->clear();
+    }
+
+    if(ImGui::IsKeyPressed(ImGuiKey_D)) {
+        if(context->selectIsEmpty()){
+            return;
+        }
+        fmt::print("DEBUG: delete node: {}\n", this->context->last_selected_node_id);
+        
+        //@todo make node disable instead of erase
+        Idtype delete_id = this->context->last_selected_node_id;
+        this->context->clearSelected();
+        auto delete_node = map_nodes[delete_id];
+
+        // delete output node link
+        for(const auto& [index, socket_id]: delete_node->ouput_socket_ids){
+            for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
+                    i!=this->map_sockets[socket_id]->node_link_ids.end();
+                    i++)
+            {
+                this->map_nodelinks[*i]->enable = false;
+            }
+        }
+        for(const auto& [index, socket_id]: delete_node->input_socket_ids){
+            for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
+                    i!=this->map_sockets[socket_id]->node_link_ids.end();
+                    i++)
+            {
+                this->map_nodelinks[*i]->enable = false;
+            }
+        }
+
+        delete_node->enable = false;
+        // this->nodes.erase(std::to_string(delete_id));
+    }
+    if(this->open_menu){
+        ImGui::OpenPopup("context_menu");
+    }
+    // 拖曳视图
+    if (ImGui::IsWindowHovered() && !ImGui::IsAnyItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Middle, 0.0f)){
+        this->context->vp_trans = this->context->vp_trans + io.MouseDelta;
+    }
+}
+
+void Scene::debugInfo() {
+    fmt::print("SCENE DATA STATUS:\n");
+    fmt::print("    node number:{}\n",this->map_nodes.size());
+    fmt::print("    sock number:{}\n",this->map_sockets.size());
+    fmt::print("    link number:{}\n",this->map_nodelinks.size());
+    for(auto const &[a,node] : this->map_nodes) {
+        fmt::print("node_id:{} node_use:{}\n",node->id,node.use_count());
+    }
+
+}
+
 void Scene::Show() {
     ImGui::Begin("hello");
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
     this->drawGrid();
     this->drawNodes();
-    // this->drawNodeLinks();
-    // this->executeEvent();
+    this->drawNodeLinks();
+    this->executeEvent();
 
 
     ImGui::End();

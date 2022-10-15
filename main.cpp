@@ -26,7 +26,7 @@ struct Test
 int main() {
     fmt::print("start\n");
 
-    auto scene_ptr = std::make_unique<Scene>();
+    auto scene_ptr = std::make_shared<Scene>();
     auto test_ptr = std::make_unique<Test>();
     scene_ptr->init();
     handle(std::move(scene_ptr));
@@ -40,4 +40,5 @@ https://gist.github.com/ocornut/b3a9ecf13502fd818799a452969649ad
 
 @todo
     socket invisableButton -> ItemAdd
+    delete enable = false but still exist in sockets find
 */

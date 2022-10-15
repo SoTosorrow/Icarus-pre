@@ -33,11 +33,21 @@ struct Context{
     Idtype genId(){
         auto id = std::stoi(this->id);
         id += 1;
-        return std::to_string(id);
+        auto new_id = std::to_string(id);
+        this->id = new_id;
+        return new_id;
     }
 
     bool ouputNotEmpty(){
         return (this->ouput_socket_id != std::to_string(-1));
+    }
+
+    bool selectIsEmpty(){
+        return (this->last_selected_node_id == std::to_string(-1));
+    }
+
+    void clearSelected(){
+        this->last_selected_node_id = std::to_string(-1);
     }
 
     void clear(){

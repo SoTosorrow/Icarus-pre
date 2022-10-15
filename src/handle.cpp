@@ -10,7 +10,7 @@
 
 
 template<ShowAble T>
-int handle(std::unique_ptr<T> t) {
+int handle(std::shared_ptr<T> t) {
     if(!glfwInit())
         return 1;
 
