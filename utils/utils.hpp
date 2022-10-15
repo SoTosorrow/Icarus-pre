@@ -1,14 +1,15 @@
 #pragma once
+#define IMGUI_DEFINE_MATH_OPERATORS =1
 #include "imgui.h"
+#include "imgui_internal.h"
 // #include<mutex>
-
 // namespace graph {
 
 
-static inline ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs) { return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y); }
-static inline ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs) { return ImVec2(lhs.x - rhs.x, lhs.y - rhs.y); }
-static inline ImVec2 operator/(const ImVec2& lhs, const int& v) { return ImVec2(lhs.x/v, lhs.y/v); }
-static inline ImVec2 operator*(const ImVec2& lhs, const int& v) { return ImVec2(lhs.x*2, lhs.y*2); }
+// static inline ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs) { return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y); }
+// static inline ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs) { return ImVec2(lhs.x - rhs.x, lhs.y - rhs.y); }
+// static inline ImVec2 operator/(const ImVec2& lhs, const int& v) { return ImVec2(lhs.x/v, lhs.y/v); }
+// static inline ImVec2 operator*(const ImVec2& lhs, const int& v) { return ImVec2(lhs.x*2, lhs.y*2); }
 
 struct Context{
     int id=0;
