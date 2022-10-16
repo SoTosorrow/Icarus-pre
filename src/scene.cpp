@@ -177,15 +177,25 @@ void Scene::delNode(){
             fmt::print("{},{}\n", conn_socket_input_id,conn_socket_ouput_id);
     */
     for(const auto& [index, socket_id]: delete_node->ouput_socket_ids){
-        
         for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
                 i!=this->map_sockets[socket_id]->node_link_ids.end();
-                i++)
+                i)
         {
             this->map_nodelinks[*i]->enable = false;
 
+            //@todo for more-in input_socket this should be same delete method like ouput_socket_id
             auto conn_socket_input_id = this->map_nodelinks[*i]->input_socket_id;
             this->map_sockets[conn_socket_input_id]->node_link_ids = {};
+            // for(auto j=this->map_sockets[conn_socket_input_id]->node_link_ids.begin();
+            //     j!=this->map_sockets[conn_socket_input_id]->node_link_ids.end();
+            //     j++)
+            // {
+            // if(*j == *i){
+            //     std::list<Idtype>::iterator delete_j = j;
+            //     j++;
+            //     this->map_sockets[conn_socket_input_id]->node_link_ids.erase(delete_j);
+            // }
+            // }
 
             std::list<Idtype>::iterator delete_i = i;
             i++;
@@ -198,7 +208,7 @@ void Scene::delNode(){
 
         for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
                 i!=this->map_sockets[socket_id]->node_link_ids.end();
-                i++)
+                i)
         {
             this->map_nodelinks[*i]->enable = false;
 
@@ -211,6 +221,7 @@ void Scene::delNode(){
                 std::list<Idtype>::iterator delete_j = j;
                 j++;
                 this->map_sockets[conn_socket_ouput_id]->node_link_ids.erase(delete_j);
+                break;
             }
             }
 
@@ -263,7 +274,9 @@ void Scene::debugInfo() {
         fmt::print("node_id:{} node_use:{}\n",node->id,node.use_count());
     }
     for(auto const &[a,link] : this->map_nodelinks) {
-        fmt::print("link_id:{} link_use:{}\n",link->id,link.use_count());
+        if(link->enable){
+            fmt::print("link_id:{} link_use:{}\n",link->id,link.use_count());
+        }
     }
     
 
@@ -303,12 +316,15 @@ void Scene::sortNodes(){
         fmt::print("    DEBUG: node_id useful: {}\n", node->id);
 
         for(const auto& [index,socket_id]:node->input_socket_ids){
-            fmt::print("        DEBUG: sock_input_link_size useful: {}\n", 
-                map_sockets[socket_id]->node_link_ids.size());
+            // fmt::print("        DEBUG: sock_input_link_size useful: {}\n", 
+            //     map_sockets[socket_id]->node_link_ids.size());
+            node->compute_input_dep = 0;
+            node->compute_input_dep += map_sockets[socket_id]->node_link_ids.size();
+            fmt::print("        DEBUG: node input_dep: {}\n", node->compute_input_dep);
         }
         for(const auto& [index,socket_id]:node->ouput_socket_ids){
-            fmt::print("        DEBUG: sock_ouput_link_size useful: {}\n", 
-                map_sockets[socket_id]->node_link_ids.size());
+            // fmt::print("        DEBUG: sock_ouput_link_size useful: {}\n", 
+            //     map_sockets[socket_id]->node_link_ids.size());
         }
     }
     }
