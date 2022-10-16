@@ -85,4 +85,13 @@ void Node:: draw() {
 void Node::drawDebug(ImVec2 node_start_pos){
     auto draw_list = ImGui::GetWindowDrawList();
 
+    ImGui::SetCursorScreenPos(node_start_pos);
+    ImGui::BeginGroup();
+    ImGui::PushItemWidth(120);
+
+    ImGui::Text("%s",this->name.c_str());
+    
+    ImGui::PopItemWidth();
+    ImGui::EndGroup();
+
 }

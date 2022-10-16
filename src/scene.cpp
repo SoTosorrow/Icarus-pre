@@ -1,5 +1,6 @@
 #include "scene.hpp"
 #include "utils.hpp"
+#include "../inherit/node.hpp"
 
 Scene::Scene() {
     this->context = std::make_shared<Context>();
@@ -9,6 +10,7 @@ void Scene::init(){
     auto lambda = [](std::shared_ptr<Node> node){
         node->setSocketsNum(2,5);
         node->setNodeSize(400, 200);
+        node->node_body_color = IM_COL32(200, 200, 150, 200);
     };
     auto node = this->addNode(lambda);
     // lambda();
@@ -263,6 +265,16 @@ void Scene::delNode(){
     // this->nodes.erase(std::to_string(delete_id));
 }
 
+void Scene::addNodeTest() {
+    auto nodeb = std::make_shared<NodeB>(this->weak_from_this(),this->context, "test", ImGui::GetMousePos());
+    auto temp_id = nodeb->id; 
+    // lambda to define the node properties
+    nodeb->init();
+    
+    this->map_nodes.insert({std::move(temp_id), nodeb});
+}
+
+
 void Scene::executeEvent() {
     ImGuiIO& io = ImGui::GetIO();
     // Scene Events
@@ -280,6 +292,9 @@ void Scene::executeEvent() {
     if(ImGui::IsKeyPressed(ImGuiKey_W)) {
         fmt::print("DEBUG: SortNodes ing...\n");
         this->sortNodes();
+    }
+    if(ImGui::IsKeyPressed(ImGuiKey_E)){
+        this->addNodeTest();
     }
 
     if(ImGui::IsKeyPressed(ImGuiKey_D)) {
