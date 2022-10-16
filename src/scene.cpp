@@ -75,7 +75,7 @@ void Scene::drawNodes() {
         ImGui::PushID(ImGui::GetID(node_id.c_str()));
 
         // draw socket first to response the event
-        draw_list->ChannelsSetCurrent(2);
+        draw_list->ChannelsSetCurrent(3);
         this->drawNodeInputSockets(node);
         this->drawNodeOuputSockets(node);
         
@@ -315,7 +315,8 @@ void Scene::debugInfo() {
     fmt::print("    sock number:{}\n",this->map_sockets.size());
     fmt::print("    link number:{}\n",this->map_nodelinks.size());
     for(auto const &[a,node] : this->map_nodes) {
-        fmt::print("node_id:{} node_use:{}\n",node->id,node.use_count());
+        if(node->enable)
+            fmt::print("node_id:{} node_use:{}\n",node->id,node.use_count());
     }
     for(auto const &[a,link] : this->map_nodelinks) {
         if(link->enable){
@@ -336,9 +337,10 @@ void Scene::Show() {
         draw layer bigger>show-first
         link 0
         node 1
-        sock 2
+        cont 2
+        sock 3
     */
-    draw_list->ChannelsSplit(3);
+    draw_list->ChannelsSplit(4);
 
     this->drawGrid();
     this->drawNodes();
@@ -355,21 +357,51 @@ void Scene::Show() {
 
 void Scene::sortNodes(){
     fmt::print("DEBUG: nodes size: {}\n", map_nodes.size());
-    for(auto& [id, node]:map_nodes){
-    if(node->enable){
-        fmt::print("    DEBUG: node_id useful: {}\n", node->id);
 
+    // init compute_dep
+    fmt::print("EXEC: nodes init\n");
+    for(auto& [id, node]:map_nodes){
+        node->compute_input_dep = 0;
         for(const auto& [index,socket_id]:node->input_socket_ids){
-            // fmt::print("        DEBUG: sock_input_link_size useful: {}\n", 
-            //     map_sockets[socket_id]->node_link_ids.size());
-            node->compute_input_dep = 0;
             node->compute_input_dep += map_sockets[socket_id]->node_link_ids.size();
-            fmt::print("        DEBUG: node input_dep: {}\n", node->compute_input_dep);
         }
-        for(const auto& [index,socket_id]:node->ouput_socket_ids){
-            // fmt::print("        DEBUG: sock_ouput_link_size useful: {}\n", 
-            //     map_sockets[socket_id]->node_link_ids.size());
+        // fmt::print("STAT: node {}:{}\n",node->id,node->compute_input_dep);
+    }
+    fmt::print("EXEC: nodes init DONE\n");
+
+    // init compute_list
+    fmt::print("EXEC: nodes prepare\n");
+    for(auto& [id, node]:map_nodes){
+        if(node->enable && node->compute_input_dep==0)
+            this->compute_queue.push(node);
+    }
+    fmt::print("EXEC: nodes prepare DONE\n");
+
+    // execute node and search new node prepared
+    fmt::print("EXEC: nodes execute\n");
+    while(!this->compute_queue.empty()){
+        auto execute_node = this->compute_queue.front();
+        this->compute_queue.pop();
+
+        execute_node->update();
+
+        for(auto [socket_index, socket_id]: execute_node->ouput_socket_ids){
+            for(auto i = this->map_sockets[socket_id]->node_link_ids.begin();
+                     i!= this->map_sockets[socket_id]->node_link_ids.end();
+                     i++
+            ){
+                auto input_id = this->map_nodelinks[*i]->input_socket_id;
+                auto search_node_id = this->map_sockets[input_id]->node_id;
+                auto search_node = this->map_nodes[search_node_id];
+                search_node->compute_input_dep -= 1;
+                if(search_node->compute_input_dep == 0)
+                {
+                    this->compute_queue.push(search_node);
+                }
+            }
         }
     }
-    }
+    fmt::print("EXEC: nodes execute DONE\n");
+
+
 }

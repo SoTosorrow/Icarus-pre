@@ -14,12 +14,13 @@ struct Node
     Idtype id;
     ImVec2 pos;
     ImVec2 size = ImVec2(150, 60);
-    std::string name;
+    std::string_view name;
     std::shared_ptr<Context> context;
     ElementType element_type = ElementType::ElementNode;
 
     std::weak_ptr<Scene> scene;
     bool enable = true;
+    bool resize = false;
     int input_sockets_num = 3;
     int ouput_sockets_num = 3;
     std::unordered_map<int, Idtype> input_socket_ids;
@@ -32,7 +33,7 @@ struct Node
 
     Node(std::weak_ptr<Scene> _scene, 
         std::shared_ptr<Context> _context, 
-        const std::string &_name, 
+        const std::string_view &_name, 
         ImVec2 _pos);
 
     void setSocketsNum(int _input_sockets_num, int _output_sockets_num);
@@ -43,7 +44,8 @@ struct Node
     */
     virtual void init();
     virtual void draw();
-    virtual void update(){}
+    virtual void fillContent(){}
+    virtual void update(){fmt::print("EXEC: {}\n", this->id);}
     void drawDebug(ImVec2 node_start_pos);
 
 };

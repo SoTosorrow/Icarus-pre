@@ -6,29 +6,32 @@ struct NodeB :public Node{
 
     NodeB(std::weak_ptr<Scene> _scene, 
         std::shared_ptr<Context> _context, 
-        const std::string &_name, 
+        const std::string_view &_name, 
         ImVec2 _pos)
     :Node(_scene, _context, _name, _pos){
         fmt::print("TEST node create\n");
-        this->node_body_color = IM_COL32(50, 200, 200, 200);
+        this->node_body_color = IM_COL32(200, 200, 200, 255);
+        this->resize = true;
     }
-    void draw(){
-        Node::draw();
+    void fillContent(){
 
-        auto draw_list = ImGui::GetWindowDrawList();
+        // auto draw_list = ImGui::GetWindowDrawList();
         auto node_start_pos = this->pos + this->context->vp_trans;
-        ImGui::SetCursorScreenPos(node_start_pos);
-        ImGui::BeginGroup();
-        ImGui::PushItemWidth(120);
-
+        ImGui::PushItemWidth(150);
+        
+        // ImGui::Text(this->name.data());
+        ImGui::SliderFloat("##value", &a, 0.0f, 1.0f, "Alpha %.2f");
+        ImGui::SliderFloat("##value", &a, 0.0f, 1.0f, "Alpha %.2f");
+        ImGui::SliderFloat("##value", &a, 0.0f, 1.0f, "Alpha %.2f");
+        ImGui::SliderFloat("##value", &a, 0.0f, 1.0f, "Alpha %.2f");
         ImGui::SliderFloat("##value", &a, 0.0f, 1.0f, "Alpha %.2f");
         ImGui::ColorEdit3("##color", &c.x );
 
         ImGui::PopItemWidth();
-        ImGui::EndGroup();
-        // auto size = ImGui::GetItemRectSize();
-        // draw_list->AddRectFilled(node_start_pos, node_start_pos +size,IM_COL32(255,255,255,200));
-
+       
+    
+        // draw_list->AddRectFilled(node_start_pos, node_start_pos+size, IM_COL32_WHITE);
+        
     }
 
 };

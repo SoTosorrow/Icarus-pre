@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <any>
 #include <functional>
+#include <queue>
 #include "utils.hpp"
 
 #include "node.hpp"
@@ -17,6 +18,7 @@ struct Scene : public std::enable_shared_from_this<Scene> {
     std::unordered_map<Idtype, std::shared_ptr<NodeLink>> map_nodelinks;
     std::unordered_map<Idtype, std::shared_ptr<NodeSocket>> map_sockets;
     std::unordered_map<Idtype ,std::any> map_datas;
+    std::queue<std::shared_ptr<Node>> compute_queue;
 
     bool open_menu = false;
 

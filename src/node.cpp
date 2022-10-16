@@ -5,7 +5,7 @@
 Node::Node(
     std::weak_ptr<Scene> _scene,
     std::shared_ptr<Context> _context,
-    const std::string &_name,
+    const std::string_view &_name,
     ImVec2 _pos)
     :scene(std::move(_scene)),context(_context),name(_name),pos(_pos)
 {
@@ -40,25 +40,41 @@ void Node::init() {
     }
 }
 
-void Node:: draw() {
+void Node::draw() {
     
     auto draw_list = ImGui::GetWindowDrawList();
     auto im_id = ImGui::GetID(this->id.c_str());
     ImGuiIO& io = ImGui::GetIO();
 
-    auto node_start_pos = this->pos +              this->context->vp_trans;
-    auto node_end_pos   = this->pos + this->size + this->context->vp_trans;
+    auto node_start_pos = this->pos + this->context->vp_trans;
     
     // @debug draw
     if(is_debug_mode){
         this->drawDebug(node_start_pos);
     }
+
+    /*
+        virtual add content
+        custom view
+        @todo
+    */
+    draw_list->ChannelsSetCurrent(3);
+    ImGui::SetCursorScreenPos(node_start_pos + ImVec2(5,5));
+    ImGui::BeginGroup();
+    this->fillContent();
+    ImGui::EndGroup();
+    if (this->resize)
+        this->size = ImGui::GetItemRectSize() + ImVec2(10,10);
+
+
     // draw Node body
+    draw_list->ChannelsSetCurrent(1);
     draw_list->AddRectFilled(
         node_start_pos,
-        node_end_pos,
+        node_start_pos + this->size,
         node_body_color
     );
+
 
     // add Node body Item
     ImVec2 size = ImGui::CalcItemSize(this->size, 0.0f, 0.0f);
@@ -83,15 +99,15 @@ void Node:: draw() {
 }
 
 void Node::drawDebug(ImVec2 node_start_pos){
-    auto draw_list = ImGui::GetWindowDrawList();
+    // auto draw_list = ImGui::GetWindowDrawList();
 
-    ImGui::SetCursorScreenPos(node_start_pos);
-    ImGui::BeginGroup();
-    ImGui::PushItemWidth(120);
+    // ImGui::SetCursorScreenPos(node_start_pos);
+    // ImGui::BeginGroup();
+    // ImGui::PushItemWidth(120);
 
-    ImGui::Text("%s",this->name.c_str());
+    // ImGui::Text("%s",this->name.c_str());
     
-    ImGui::PopItemWidth();
-    ImGui::EndGroup();
+    // ImGui::PopItemWidth();
+    // ImGui::EndGroup();
 
 }
