@@ -41,6 +41,8 @@ struct Scene : public std::enable_shared_from_this<Scene> {
         const std::string& name = "hello", 
         ImVec2 pos=ImVec2(300,300))
             -> std::shared_ptr<Node>; 
+    
+    void addNodeTest();
 
     /*
         delelte node and the connected link of socket

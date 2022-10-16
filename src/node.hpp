@@ -3,7 +3,7 @@
 #include <memory>
 #include <unordered_map>
 #include <type_traits>
-
+#include <string_view>
 /*
 @todo size to ImGui::GetItemSize
 */
@@ -38,12 +38,16 @@ struct Node
     void setSocketsNum(int _input_sockets_num, int _output_sockets_num);
     void setNodeSize(int _size_x, int _size_y);
 
-    void init();
-    void draw();
-    void update(){}
+    /*
+        virtual func to dispatch derive node func
+    */
+    virtual void init();
+    virtual void draw();
+    virtual void update(){}
     void drawDebug(ImVec2 node_start_pos);
 
 };
+
 
 template<class T>
 concept NodeAble = std::is_base_of<Node, T>::value;
