@@ -41,6 +41,7 @@ void NodeSocket::draw() {
     // Add Socket Item
     auto socket_width = ImVec2(this->socket_radius, this->socket_radius);
     auto socket_start_pos = this->pos - socket_width;
+    
     ImVec2 size = ImGui::CalcItemSize( socket_width*2 , 0.0f, 0.0f);
     ImRect bb(socket_start_pos, socket_start_pos + size);
     ImGui::ItemSize(size);

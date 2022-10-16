@@ -24,6 +24,8 @@ struct Node
     std::unordered_map<int, Idtype> input_socket_ids;
     std::unordered_map<int, Idtype> ouput_socket_ids;
 
+    int compute_input_dep = 0;
+
     ImU32 node_body_color = IM_COL32(150, 150, 150, 150);
     bool is_debug_mode = true;
 

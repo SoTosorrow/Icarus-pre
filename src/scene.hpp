@@ -30,11 +30,13 @@ struct Scene : public std::enable_shared_from_this<Scene> {
     void drawNodes();
     void drawNodeLinks();
     void addNode(const std::string& name="hello", ImVec2 pos=ImVec2(300,300));
+    void delNode();
     void drawNodeInputSockets(std::shared_ptr<Node> node);
     void drawNodeOuputSockets(std::shared_ptr<Node> node);
     void drawGrid();
     void executeEvent();
     void debugInfo();
-    void Show();
+    void sortNodes();
 
+    void Show();
 };

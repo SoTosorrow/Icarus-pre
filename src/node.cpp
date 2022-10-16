@@ -69,8 +69,7 @@ void Node:: draw() {
     bool hovered, held;
     bool pressed = ImGui::ButtonBehavior(bb, im_id, &hovered, &held);
     
-    // auto size = ImGui::GetItemRectSize();
-    // draw_list->AddRectFilled(node_start_pos, node_start_pos +size,IM_COL32_WHITE);
+    // response Node basic event
     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0))
     {
         fmt::print("DEBUG: click Node:{}\n", this->id);

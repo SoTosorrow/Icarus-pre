@@ -53,10 +53,14 @@ void Scene::drawNodes() {
             continue;
 
         ImGui::PushID(ImGui::GetID(node_id.c_str()));
+
         // draw socket first to response the event
+        draw_list->ChannelsSetCurrent(2);
         this->drawNodeInputSockets(node);
         this->drawNodeOuputSockets(node);
+        
         // draw nodes
+        draw_list->ChannelsSetCurrent(1);
         node->draw();
 
         ImGui::PopID();
@@ -153,6 +157,73 @@ void Scene::drawGrid() {
         draw_list->AddLine(ImVec2(0.0f, y) + win_pos, ImVec2(canvas_sz.x, y) + win_pos, scene_grid_color);
 }
 
+void Scene::delNode(){
+    if(context->selectIsEmpty()){
+        return;
+    }
+    fmt::print("DEBUG: delete node: {}\n", this->context->last_selected_node_id);
+    
+    //@todo make node disable instead of erase
+    Idtype delete_id = this->context->last_selected_node_id;
+    this->context->clearSelected();
+    auto delete_node = map_nodes[delete_id];
+
+    /*
+        delete from scene-map
+        delete from socket-map
+        delete from connect-socket
+            auto conn_socket_input_id = this->map_nodelinks[*i]->input_socket_id;
+            auto conn_socket_ouput_id = this->map_nodelinks[*i]->ouput_socket_id;
+            fmt::print("{},{}\n", conn_socket_input_id,conn_socket_ouput_id);
+    */
+    for(const auto& [index, socket_id]: delete_node->ouput_socket_ids){
+        
+        for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
+                i!=this->map_sockets[socket_id]->node_link_ids.end();
+                i++)
+        {
+            this->map_nodelinks[*i]->enable = false;
+
+            auto conn_socket_input_id = this->map_nodelinks[*i]->input_socket_id;
+            this->map_sockets[conn_socket_input_id]->node_link_ids = {};
+
+            std::list<Idtype>::iterator delete_i = i;
+            i++;
+            this->map_sockets[socket_id]->node_link_ids.erase(delete_i);
+
+        }
+
+    }
+    for(const auto& [index, socket_id]: delete_node->input_socket_ids){
+
+        for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
+                i!=this->map_sockets[socket_id]->node_link_ids.end();
+                i++)
+        {
+            this->map_nodelinks[*i]->enable = false;
+
+            auto conn_socket_ouput_id = this->map_nodelinks[*i]->ouput_socket_id;
+            for(auto j=this->map_sockets[conn_socket_ouput_id]->node_link_ids.begin();
+                j!=this->map_sockets[conn_socket_ouput_id]->node_link_ids.end();
+                j++)
+            {
+            if(*j == *i){
+                std::list<Idtype>::iterator delete_j = j;
+                j++;
+                this->map_sockets[conn_socket_ouput_id]->node_link_ids.erase(delete_j);
+            }
+            }
+
+            std::list<Idtype>::iterator delete_i = i;
+            i++;
+            this->map_sockets[socket_id]->node_link_ids.erase(delete_i);
+        }
+    }
+
+    delete_node->enable = false;
+    // this->nodes.erase(std::to_string(delete_id));
+}
+
 void Scene::executeEvent() {
     ImGuiIO& io = ImGui::GetIO();
     // Scene Events
@@ -167,55 +238,12 @@ void Scene::executeEvent() {
         this->debugInfo();
     }
     if(ImGui::IsKeyPressed(ImGuiKey_W)) {
-        fmt::print("DEBUG: context clear\n");
-        this->context->clear();
+        fmt::print("DEBUG: SortNodes ing...\n");
+        this->sortNodes();
     }
 
     if(ImGui::IsKeyPressed(ImGuiKey_D)) {
-        if(context->selectIsEmpty()){
-            return;
-        }
-        fmt::print("DEBUG: delete node: {}\n", this->context->last_selected_node_id);
-        
-        //@todo make node disable instead of erase
-        Idtype delete_id = this->context->last_selected_node_id;
-        this->context->clearSelected();
-        auto delete_node = map_nodes[delete_id];
-
-        /*
-            delete from scene-map
-            delete from socket-map
-        */
-        for(const auto& [index, socket_id]: delete_node->ouput_socket_ids){
-            
-            for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
-                    i!=this->map_sockets[socket_id]->node_link_ids.end();
-                    i++)
-            {
-                this->map_nodelinks[*i]->enable = false;
-
-                std::list<Idtype>::iterator delete_i = i;
-                i++;
-                this->map_sockets[socket_id]->node_link_ids.erase(delete_i);
-            }
-
-        }
-        for(const auto& [index, socket_id]: delete_node->input_socket_ids){
-
-            for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
-                    i!=this->map_sockets[socket_id]->node_link_ids.end();
-                    i++)
-            {
-                this->map_nodelinks[*i]->enable = false;
-
-                std::list<Idtype>::iterator delete_i = i;
-                i++;
-                this->map_sockets[socket_id]->node_link_ids.erase(delete_i);
-            }
-        }
-
-        delete_node->enable = false;
-        // this->nodes.erase(std::to_string(delete_id));
+        this->delNode();
     }
     if(this->open_menu){
         ImGui::OpenPopup("context_menu");
@@ -245,11 +273,43 @@ void Scene::Show() {
     ImGui::Begin("hello");
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
+    auto draw_list = ImGui::GetWindowDrawList();
+
+    /*
+        draw layer bigger>show-first
+        link 0
+        node 1
+        sock 2
+    */
+    draw_list->ChannelsSplit(3);
+
     this->drawGrid();
     this->drawNodes();
+
+    draw_list->ChannelsSetCurrent(0);
     this->drawNodeLinks();
     this->executeEvent();
+
+    draw_list->ChannelsMerge();
 
 
     ImGui::End();
 };
+
+void Scene::sortNodes(){
+    fmt::print("DEBUG: nodes size: {}\n", map_nodes.size());
+    for(auto& [id, node]:map_nodes){
+    if(node->enable){
+        fmt::print("    DEBUG: node_id useful: {}\n", node->id);
+
+        for(const auto& [index,socket_id]:node->input_socket_ids){
+            fmt::print("        DEBUG: sock_input_link_size useful: {}\n", 
+                map_sockets[socket_id]->node_link_ids.size());
+        }
+        for(const auto& [index,socket_id]:node->ouput_socket_ids){
+            fmt::print("        DEBUG: sock_ouput_link_size useful: {}\n", 
+                map_sockets[socket_id]->node_link_ids.size());
+        }
+    }
+    }
+}
