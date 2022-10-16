@@ -21,6 +21,7 @@ NodeSocket::NodeSocket(
 }
 
 void NodeSocket::draw() {
+    auto im_id = ImGui::GetID(this->id.c_str());
     auto draw_list = ImGui::GetWindowDrawList();
     // 加上viewport的全局位置
     auto belong_node = this->scene.lock()->map_nodes[this->node_id];
@@ -36,6 +37,17 @@ void NodeSocket::draw() {
         socket_radius, 
         socket_color
     );
+
+    // Add Socket Item
+    auto socket_width = ImVec2(this->socket_radius, this->socket_radius);
+    auto socket_start_pos = this->pos - socket_width;
+    ImVec2 size = ImGui::CalcItemSize( socket_width*2 , 0.0f, 0.0f);
+    ImRect bb(socket_start_pos, socket_start_pos + size);
+    ImGui::ItemSize(size);
+    ImGui::ItemAdd(bb ,im_id);
+
+    bool hovered, held;
+    bool pressed = ImGui::ButtonBehavior(bb, im_id, &hovered, &held);
 }
 
 void NodeSocket::addNodeLink(Idtype node_link_id) {

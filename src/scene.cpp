@@ -53,26 +53,11 @@ void Scene::drawNodes() {
             continue;
 
         ImGui::PushID(ImGui::GetID(node_id.c_str()));
-        // draw nodes
-        node->draw();
+        // draw socket first to response the event
         this->drawNodeInputSockets(node);
         this->drawNodeOuputSockets(node);
-
-        // 变化坐标系
-        ImGui::SetCursorScreenPos(node->pos + this->context->vp_trans);
-        // 建立一个虚拟按钮充当节点的Item
-        ImGui::InvisibleButton("node", node->size);
-        // 点击事件
-        if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0))
-        {
-            fmt::print("DEBUG: click Node:{}\n", node->id);
-            this->context->last_selected_node_id = node->id;
-        }
-        // 拖拽事件
-        if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-        {
-            node->pos = node->pos + io.MouseDelta;
-        }
+        // draw nodes
+        node->draw();
 
         ImGui::PopID();
     }
@@ -88,15 +73,11 @@ void Scene::addNode(const std::string& name, ImVec2 pos){
 void Scene::drawNodeInputSockets(std::shared_ptr<Node> node){
     auto draw_list = ImGui::GetWindowDrawList();
     for(const auto& [socket_index, socket_id] : node->input_socket_ids) {
+
         ImGui::PushID(ImGui::GetID(socket_id.c_str()));
         auto socket = this->map_sockets[socket_id];
 
         socket->draw();
-
-        // socket visible button
-        auto socket_width = ImVec2(socket->socket_radius, socket->socket_radius);
-        ImGui::SetCursorScreenPos(socket->pos - socket_width);
-        ImGui::InvisibleButton("socket", socket_width*2);
 
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
             this->checkNodeLink(socket);     
@@ -115,16 +96,11 @@ void Scene::drawNodeInputSockets(std::shared_ptr<Node> node){
 void Scene::drawNodeOuputSockets(std::shared_ptr<Node> node){
     auto draw_list = ImGui::GetWindowDrawList();
     for(const auto& [socket_index, socket_id] : node->ouput_socket_ids) {
-        ImGui::PushID(ImGui::GetID(socket_id.c_str()));
 
+        ImGui::PushID(ImGui::GetID(socket_id.c_str()));
         auto socket = this->map_sockets[socket_id];
 
         socket->draw();
-
-        // socket visible button
-        auto socket_width = ImVec2(socket->socket_radius, socket->socket_radius);
-        ImGui::SetCursorScreenPos(socket->pos - socket_width);
-        ImGui::InvisibleButton("socket", socket_width*2);
 
         if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
             this->checkNodeLink(socket);   
@@ -225,7 +201,7 @@ void Scene::executeEvent() {
 
         }
         for(const auto& [index, socket_id]: delete_node->input_socket_ids){
-            
+
             for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
                     i!=this->map_sockets[socket_id]->node_link_ids.end();
                     i++)

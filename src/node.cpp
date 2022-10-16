@@ -43,6 +43,8 @@ void Node::init() {
 void Node:: draw() {
     
     auto draw_list = ImGui::GetWindowDrawList();
+    auto im_id = ImGui::GetID(this->id.c_str());
+    ImGuiIO& io = ImGui::GetIO();
 
     auto node_start_pos = this->pos +              this->context->vp_trans;
     auto node_end_pos   = this->pos + this->size + this->context->vp_trans;
@@ -57,7 +59,28 @@ void Node:: draw() {
         node_end_pos,
         node_body_color
     );
-    // draw_list->ChannelsMerge();
+
+    // add Node body Item
+    ImVec2 size = ImGui::CalcItemSize(this->size, 0.0f, 0.0f);
+    ImRect bb(node_start_pos, node_start_pos + size);
+    ImGui::ItemSize(size);
+    ImGui::ItemAdd(bb ,im_id);
+
+    bool hovered, held;
+    bool pressed = ImGui::ButtonBehavior(bb, im_id, &hovered, &held);
+    
+    // auto size = ImGui::GetItemRectSize();
+    // draw_list->AddRectFilled(node_start_pos, node_start_pos +size,IM_COL32_WHITE);
+    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0))
+    {
+        fmt::print("DEBUG: click Node:{}\n", this->id);
+        this->context->last_selected_node_id = this->id;
+    }
+    if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+    {
+        this->pos = this->pos + io.MouseDelta;
+    }
+
 }
 
 void Node::drawDebug(ImVec2 node_start_pos){
