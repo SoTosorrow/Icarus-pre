@@ -206,21 +206,35 @@ void Scene::executeEvent() {
         this->context->clearSelected();
         auto delete_node = map_nodes[delete_id];
 
-        // delete output node link
+        /*
+            delete from scene-map
+            delete from socket-map
+        */
         for(const auto& [index, socket_id]: delete_node->ouput_socket_ids){
+            
             for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
                     i!=this->map_sockets[socket_id]->node_link_ids.end();
                     i++)
             {
                 this->map_nodelinks[*i]->enable = false;
+
+                std::list<Idtype>::iterator delete_i = i;
+                i++;
+                this->map_sockets[socket_id]->node_link_ids.erase(delete_i);
             }
+
         }
         for(const auto& [index, socket_id]: delete_node->input_socket_ids){
+            
             for(auto i=this->map_sockets[socket_id]->node_link_ids.begin();
                     i!=this->map_sockets[socket_id]->node_link_ids.end();
                     i++)
             {
                 this->map_nodelinks[*i]->enable = false;
+
+                std::list<Idtype>::iterator delete_i = i;
+                i++;
+                this->map_sockets[socket_id]->node_link_ids.erase(delete_i);
             }
         }
 
@@ -244,6 +258,10 @@ void Scene::debugInfo() {
     for(auto const &[a,node] : this->map_nodes) {
         fmt::print("node_id:{} node_use:{}\n",node->id,node.use_count());
     }
+    for(auto const &[a,link] : this->map_nodelinks) {
+        fmt::print("link_id:{} link_use:{}\n",link->id,link.use_count());
+    }
+    
 
 }
 
