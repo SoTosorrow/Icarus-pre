@@ -3,6 +3,7 @@
 #include <memory>
 #include <unordered_map>
 #include <any>
+#include <functional>
 #include "utils.hpp"
 
 #include "node.hpp"
@@ -29,7 +30,22 @@ struct Scene : public std::enable_shared_from_this<Scene> {
     void addNodeLink();
     void drawNodes();
     void drawNodeLinks();
-    void addNode(const std::string& name="hello", ImVec2 pos=ImVec2(300,300));
+    /*
+        add Node to Scene map
+        @param f to set node properties and execute before node init
+        @old template<class F>
+             auto addNode(F const& f=[](std::shared_ptr<Node> node){}, const std::string& name="hello", ImVec2 pos=ImVec2(300,300))-> std::shared_ptr<Node>;
+    */
+    auto addNode(
+        const std::function<void(std::shared_ptr<Node>)>& f = [](std::shared_ptr<Node> node){}, 
+        const std::string& name = "hello", 
+        ImVec2 pos=ImVec2(300,300))
+            -> std::shared_ptr<Node>; 
+
+    /*
+        delelte node and the connected link of socket
+        set disable in scene map_nodes/map_nodelinks
+    */
     void delNode();
     void drawNodeInputSockets(std::shared_ptr<Node> node);
     void drawNodeOuputSockets(std::shared_ptr<Node> node);

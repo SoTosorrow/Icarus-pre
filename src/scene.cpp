@@ -6,7 +6,13 @@ Scene::Scene() {
 }
 
 void Scene::init(){
-    this->addNode();
+    auto lambda = [](std::shared_ptr<Node> node){
+        node->setSocketsNum(2,5);
+        node->setNodeSize(400, 200);
+    };
+    auto node = this->addNode(lambda);
+    // lambda();
+
 }
 
 void Scene::checkNodeLink(std::shared_ptr<NodeSocket> socket) 
@@ -25,6 +31,18 @@ void Scene::checkNodeLink(std::shared_ptr<NodeSocket> socket)
 }
 
 void Scene::addNodeLink(){
+    auto input_socket = map_sockets[this->context->input_socket_id];
+    auto ouput_socket = map_sockets[this->context->ouput_socket_id];
+    if(input_socket->node_id == ouput_socket->node_id){
+        fmt::print("DEBUG: can not link node self\n");
+        return;
+    }
+
+    if(this->map_sockets[this->context->input_socket_id]->node_link_ids.size() >0) {
+        fmt::print("DEBUG: can not link input more than 1\n");
+        return;
+    }
+
     auto temp_link = std::make_shared<NodeLink>(
             this->context,
             this->context->input_socket_id,
@@ -67,11 +85,20 @@ void Scene::drawNodes() {
     }
 }
 
-void Scene::addNode(const std::string& name, ImVec2 pos){
+auto Scene::addNode(
+    const std::function<void(std::shared_ptr<Node>)>& init_func, 
+    const std::string& name, 
+    ImVec2 pos) 
+    -> std::shared_ptr<Node>{
+
     auto node = std::make_shared<Node>(this->weak_from_this(),this->context, name, pos);
     auto temp_id = node->id; 
+    // lambda to define the node properties
+    init_func(node);
     node->init();
-    this->map_nodes.insert({std::move(temp_id), std::move(node)});
+    
+    this->map_nodes.insert({std::move(temp_id), node});
+    return std::move(node);
 }
 
 void Scene::drawNodeInputSockets(std::shared_ptr<Node> node){
@@ -194,6 +221,7 @@ void Scene::delNode(){
             //     std::list<Idtype>::iterator delete_j = j;
             //     j++;
             //     this->map_sockets[conn_socket_input_id]->node_link_ids.erase(delete_j);
+            //     break;
             // }
             // }
 
@@ -241,7 +269,8 @@ void Scene::executeEvent() {
 
     // right click to add Node
     if (ImGui::IsMouseClicked(1)){
-        this->addNode("hello", ImGui::GetMousePos());
+        auto lambda = [](std::shared_ptr<Node> node){};
+        this->addNode(std::bind_front(lambda), "hello", ImGui::GetMousePos());
         // this->open_menu = !this->open_menu;
     }
     if(ImGui::IsKeyPressed(ImGuiKey_Q)) {

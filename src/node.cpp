@@ -17,8 +17,8 @@ void Node::setSocketsNum(int _input_sockets_num, int _output_sockets_num){
     this->input_sockets_num = _input_sockets_num;
     this->ouput_sockets_num = _output_sockets_num;
 }
-void Node::setNodeSize(ImVec2 _size){
-    this->size = _size;
+void Node::setNodeSize(int _size_x, int _size_y){
+    this->size = ImVec2(_size_x, _size_y);
 }
 
 void Node::init() {

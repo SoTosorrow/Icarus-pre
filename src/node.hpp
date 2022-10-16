@@ -2,6 +2,7 @@
 #include "utils.hpp"
 #include <memory>
 #include <unordered_map>
+#include <type_traits>
 
 /*
 @todo size to ImGui::GetItemSize
@@ -35,7 +36,7 @@ struct Node
         ImVec2 _pos);
 
     void setSocketsNum(int _input_sockets_num, int _output_sockets_num);
-    void setNodeSize(ImVec2 _size);
+    void setNodeSize(int _size_x, int _size_y);
 
     void init();
     void draw();
@@ -43,3 +44,11 @@ struct Node
     void drawDebug(ImVec2 node_start_pos);
 
 };
+
+template<class T>
+concept NodeAble = std::is_base_of<Node, T>::value;
+
+// template<NodeAble T>
+// struct NodeA : public NodeAble{
+
+// };
