@@ -39,6 +39,11 @@ https://gist.github.com/ocornut/7e9b3ec566a333d725d4
 https://gist.github.com/ocornut/b3a9ecf13502fd818799a452969649ad
 
 @todo
-    socket invisableButton -> ItemAdd
+    delete link not full!!1  @better methods
     delete enable = false but still exist in sockets find
+    ItemHoverable() instead of IsItemHoever?
+    socket function-bind from node to update size/color/shape/padding
+
+    executor/tbb/... for execute node
+    execute node data trans
 */

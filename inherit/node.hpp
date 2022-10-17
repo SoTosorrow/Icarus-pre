@@ -27,11 +27,13 @@ struct NodeB :public Node{
         ImGui::SliderFloat("##value", &a, 0.0f, 1.0f, "Alpha %.2f");
         ImGui::ColorEdit3("##color", &c.x );
 
-        ImGui::PopItemWidth();
-       
-    
+        ImGui::PopItemWidth(); 
         // draw_list->AddRectFilled(node_start_pos, node_start_pos+size, IM_COL32_WHITE);
         
+    }
+    void update(){
+        Node::update();
+        fmt::print("{}\n", a);
     }
 
 };

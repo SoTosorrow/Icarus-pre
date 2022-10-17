@@ -2,15 +2,10 @@ cmake_minimum_required(VERSION 3.0)
 project(graph)
 
 set(CMAKE_CXX_STANDARD 20)
-# set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
 
 add_subdirectory(extern/imgui)
 
-# set(MAIN 
-#     main.cpp
-#     utils/scene.cpp
-#     utils/node.cpp
-#     utils/node_socket.cpp)
 set(MAIN 
     main.cpp
     src/scene.cpp
